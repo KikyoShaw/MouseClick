@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace MouseClick
 {
@@ -58,6 +59,10 @@ namespace MouseClick
 
         //外部调用的键盘处理事件 
         private static ProcessKeyHandle _clientMethod = null;
+
+        public static event KeyEventHandler KeyDown;
+        public static event KeyPressEventHandler KeyPress;
+        public static event KeyEventHandler KeyUp;
 
         /// <summary> 
         /// 安装勾子 

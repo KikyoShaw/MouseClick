@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace MouseClick
 {
@@ -74,6 +75,8 @@ namespace MouseClick
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern int mouse_event(int dwflags, int dx, int dy, int cbuttons, int dwextrainfo);
+
+        public static event MouseEventHandler OnMouseActivity;
 
         public const int mouseeventf_move = 0x0001;      //移动鼠标
         public const int mouseeventf_leftdown = 0x0002; //模拟鼠标左键按下

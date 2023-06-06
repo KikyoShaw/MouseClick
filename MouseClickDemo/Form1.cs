@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using static MouseClick.Win32Api;
 
 namespace MouseClick
 {
@@ -64,6 +66,8 @@ namespace MouseClick
             IntervalBox.Text = Properties.Settings.Default.Interval.ToString();
             LongIntervalBox.Text = Properties.Settings.Default.LongInterval.ToString();
             HotKey();
+            InitMouseMoveHandler();
+            InitKeyHandler();
             _isLoaded = true;
         }
 
@@ -101,6 +105,57 @@ namespace MouseClick
                     Run();
                 }
             }
+        }
+
+        /// <summary>
+        /// 初始化键盘事件
+        /// </summary>
+        private void InitKeyHandler()
+        {
+            KeyboardHookLib.KeyDown += new KeyEventHandler(Hook_KeyDown);
+            //hook.KeyPress += new KeyPressEventHandler(Hook_KeyPress);
+            KeyboardHookLib.KeyUp += new KeyEventHandler(Hook_KeyUp);
+        }
+
+        /// <summary>
+        /// 键盘抬起
+        /// </summary>
+        void Hook_KeyUp(object sender, KeyEventArgs e)
+        {
+            textBox_keyUp.Text = e.KeyData.ToString();
+            textBox2.Text = e.KeyValue.ToString();
+        }
+
+        /// <summary>
+        /// 键盘输入
+        /// </summary>
+        void Hook_KeyPress(object sender, KeyPressEventArgs e)
+        { }
+
+        /// <summary>
+        /// 键盘按下
+        /// </summary>
+        void Hook_KeyDown(object sender, KeyEventArgs e)
+        {
+            textBox_keyDwon.Text = e.KeyData.ToString();
+            textBox1.Text = e.KeyValue.ToString();
+        }
+
+        /// <summary>
+        /// 初始化鼠标移动事件
+        /// </summary>
+        private void InitMouseMoveHandler()
+        {
+            Win32Api.OnMouseActivity += new MouseEventHandler(Hook_OnMouseActivity);
+        }
+
+        /// <summary>
+        /// 鼠标移动事件
+        /// </summary>
+        void Hook_OnMouseActivity(object sender, MouseEventArgs e)
+        {
+            textBox_x.Text = e.X.ToString();
+            textBox_y.Text = e.Y.ToString();
         }
 
         /// <summary>
@@ -214,7 +269,6 @@ namespace MouseClick
         private Point GetMousePoint()
         {
             Point point = Control.MousePosition;
-
             return point;
         }
 
@@ -235,8 +289,8 @@ namespace MouseClick
                 int.TryParse(IntervalBox.Text, out int n);
                 if (n == 0)
                 {
-                    n = 100;
-                    IntervalBox.Text = @"100";
+                    n = 30;
+                    IntervalBox.Text = @"30";
                 }
 
                 Properties.Settings.Default.Interval = n;
@@ -329,6 +383,12 @@ namespace MouseClick
         {
             SetUp setUp = new SetUp();
             setUp.Show();
+        }
+
+        private void button_pos_Click(object sender, EventArgs e)
+        {
+            //监控鼠标移动位置
+            
         }
     }
 }
