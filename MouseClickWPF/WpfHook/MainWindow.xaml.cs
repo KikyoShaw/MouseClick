@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Interop;
 using WpfHook.ViewModel;
 using ComboBox = System.Windows.Controls.ComboBox;
@@ -55,14 +53,26 @@ namespace WpfHook
             if (PresentationSource.FromVisual(this) is HwndSource hwndSource)
                 windowHandle = hwndSource.Handle;
 
-            BtnInstallHook.IsEnabled = true;
-            BtnUnInstall.IsEnabled = false;
+            BtnInstallHook.IsEnabled = false;
+            BtnUnInstall.IsEnabled = true;
             //初始化钩子对象
             _hook ??= new HookHelper();
             _hook.KeyDown += new System.Windows.Forms.KeyEventHandler(Hook_KeyDown!);
             //hook.KeyPress += new KeyPressEventHandler(Hook_KeyPress);
             _hook.KeyUp += new System.Windows.Forms.KeyEventHandler(Hook_KeyUp!);
             _hook.OnMouseActivity += new System.Windows.Forms.MouseEventHandler(Hook_OnMouseActivity!);
+
+            bool r = _hook != null && _hook.Start();
+            if (r)
+            {
+                BtnInstallHook.IsEnabled = false;
+                BtnUnInstall.IsEnabled = true;
+                //MessageBox.Show("安装钩子成功!");
+            }
+            else
+            {
+                MessageBox.Show("安装钩子失败!");
+            }
 
             _timerClicker.Elapsed += ClickTick!;//事件处理
             HotKeyHandler(HotKey.Text);
