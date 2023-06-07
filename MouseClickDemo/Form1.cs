@@ -14,6 +14,8 @@ namespace MouseClick
         /// </summary>
         private readonly System.Windows.Forms.Timer _timerClicker = new System.Windows.Forms.Timer();
 
+        private KeyboardHookLib _keyBoardHook = null;
+
         /// <summary>
         /// 窗口是否已经加载完毕
         /// </summary>
@@ -112,9 +114,11 @@ namespace MouseClick
         /// </summary>
         private void InitKeyHandler()
         {
-            KeyboardHookLib.KeyDown += new KeyEventHandler(Hook_KeyDown);
+            _keyBoardHook = new KeyboardHookLib();
+            //_keyBoardHook.InstallHook();
+            _keyBoardHook.KeyDown += new KeyEventHandler(Hook_KeyDown);
             //hook.KeyPress += new KeyPressEventHandler(Hook_KeyPress);
-            KeyboardHookLib.KeyUp += new KeyEventHandler(Hook_KeyUp);
+            _keyBoardHook.KeyUp += new KeyEventHandler(Hook_KeyUp);
         }
 
         /// <summary>
@@ -163,7 +167,8 @@ namespace MouseClick
         /// </summary>
         private void HotKey()
         {
-            key = Win32Api.GlobalAddAtom(HotKeyComboBox.Text);
+            var ttt = HotKeyComboBox.Text;
+            key = Win32Api.GlobalAddAtom(ttt);
             bool success = Win32Api.RegisterHotKey(this.Handle, key, Win32Api.KeyModifiers.None, _keysArray[Properties.Settings.Default.HotKey]);
             if (!success)
             {

@@ -32,7 +32,7 @@ namespace MouseClick
         public static extern int CallNextHookEx(int idHook, int nCode, IntPtr wParam, IntPtr lParam);
 
         [DllImport("User32")]
-        public extern static void SetCursorPos(int x, int y);
+        public static extern void SetCursorPos(int x, int y);
 
         //定义快捷键
         [DllImport("user32.dll", SetLastError = true)]

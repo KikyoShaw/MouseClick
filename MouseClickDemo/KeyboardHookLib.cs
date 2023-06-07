@@ -60,9 +60,9 @@ namespace MouseClick
         //外部调用的键盘处理事件 
         private static ProcessKeyHandle _clientMethod = null;
 
-        public static event KeyEventHandler KeyDown;
-        public static event KeyPressEventHandler KeyPress;
-        public static event KeyEventHandler KeyUp;
+        public event KeyEventHandler KeyDown;
+        public event KeyPressEventHandler KeyPress;
+        public event KeyEventHandler KeyUp;
 
         /// <summary> 
         /// 安装勾子 
