@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -53,26 +55,13 @@ namespace WpfHook
             if (PresentationSource.FromVisual(this) is HwndSource hwndSource)
                 windowHandle = hwndSource.Handle;
 
-            BtnInstallHook.IsEnabled = false;
-            BtnUnInstall.IsEnabled = true;
             //初始化钩子对象
             _hook ??= new HookHelper();
             _hook.KeyDown += new System.Windows.Forms.KeyEventHandler(Hook_KeyDown!);
             //hook.KeyPress += new KeyPressEventHandler(Hook_KeyPress);
             _hook.KeyUp += new System.Windows.Forms.KeyEventHandler(Hook_KeyUp!);
             _hook.OnMouseActivity += new System.Windows.Forms.MouseEventHandler(Hook_OnMouseActivity!);
-
-            bool r = _hook != null && _hook.Start();
-            if (r)
-            {
-                BtnInstallHook.IsEnabled = false;
-                BtnUnInstall.IsEnabled = true;
-                //MessageBox.Show("安装钩子成功!");
-            }
-            else
-            {
-                MessageBox.Show("安装钩子失败!");
-            }
+            //InstallHook();
 
             _timerClicker.Elapsed += ClickTick!;//事件处理
             HotKeyHandler(HotKey.Text);
@@ -140,33 +129,15 @@ namespace WpfHook
         /// </summary>
         private int _key = 0;
 
-        private void SetHookButton_clicked(object sender, RoutedEventArgs e)
-        {
-            if (BtnInstallHook.IsEnabled)
-            {
-                bool r = _hook != null && _hook.Start();
-                if (r)
-                {
-                    BtnInstallHook.IsEnabled = false;
-                    BtnUnInstall.IsEnabled = true;
-                    MessageBox.Show("安装钩子成功!");
-                }
-                else
-                {
-                    MessageBox.Show("安装钩子失败!");
-                }
-            }
-        }
+        /// <summary>
+        /// 注册钩子
+        /// </summary>
 
-        private void UnHookButton_clicked(object sender, RoutedEventArgs e)
+        private void InstallHook()
         {
-            if (BtnUnInstall.IsEnabled)
-            {
-                _hook?.Stop();
-                BtnUnInstall.IsEnabled = false;
-                BtnInstallHook.IsEnabled = true;
-                MessageBox.Show("卸载钩子成功!");
-            }
+            bool r = _hook != null && _hook.Start();
+            if (!r)
+                MessageBox.Show("安装钩子失败!");
         }
 
         /// <summary>
@@ -175,6 +146,8 @@ namespace WpfHook
         void Hook_OnMouseActivity(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             MouseText.Text = "X:" + e.X + " Y:" + e.Y;
+            _posX = e.X;
+            _posY = e.Y;
         }
 
         /// <summary>
@@ -235,7 +208,9 @@ namespace WpfHook
         /// 定时器事件处理 
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param> 
+        /// <param name="e"></param>
+        private int _posX = 0;
+        private int _posY = 0;
         private void ClickTick(object sender, EventArgs e)
         {
             Point point = Control.MousePosition;
@@ -251,7 +226,6 @@ namespace WpfHook
                     MouseRightClick(point.X, point.Y);
                     break;
             }
-
         }
 
         /// <summary>
@@ -261,11 +235,12 @@ namespace WpfHook
         /// <param name="y"></param>
         public void MouseLeftClick(int x, int y)
         {
+            System.Diagnostics.Trace.WriteLine($"x:{x}, y:{y}");
             //鼠标点击
-            HookHelper.mouse_event(HookHelper.mouseeventf_leftdown, x, y, 0, 0);
+            HookHelper.mouse_event(HookHelper.mouseeventf_absolute | HookHelper.mouseeventf_leftdown, x, y, 0, 0);
             if (_clickLongTime > 0)
                 Thread.Sleep(_clickLongTime);
-            HookHelper.mouse_event(HookHelper.mouseeventf_leftup, x, y, 0, 0);
+            HookHelper.mouse_event(HookHelper.mouseeventf_absolute | HookHelper.mouseeventf_leftup, x, y, 0, 0);
         }
 
         /// <summary>
@@ -317,6 +292,50 @@ namespace WpfHook
                 string? selectedItemContent = selectedItem?.Content.ToString(); // 获取当前所选项目的文本
                 HotKeyHandler(selectedItemContent!);
             }
+        }
+
+        /// <summary>
+        /// 注册钩子选择坐标位置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            //Move(2546, 47);
+            ChooseBtn.IsEnabled = false;
+            InstallHook();
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetCursorPos(int x, int y);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetCursorPos(out Point lpPoint);
+
+        /// <summary>
+        /// 移动鼠标到某个位置
+        /// </summary>
+        /// <param name="dx"></param>
+        /// <param name="dy"></param>
+        public void Move(int dx, int dy)
+        {
+            GetCursorPos(out var currentPos);
+            int newX = dx;
+            int newY = dy;
+            SetCursorPos(newX, newY);
+        }
+
+        private void MoveTo(int x, int y)
+        {
+            HookHelper.mouse_event(HookHelper.mouseeventf_absolute | HookHelper.mouseeventf_move, x, y, 0, 0);
+        }
+
+
+        private void ClearBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            MouseText.Text = "";
+            _posX = 0;
+            _posY = 0;
         }
     }
 }

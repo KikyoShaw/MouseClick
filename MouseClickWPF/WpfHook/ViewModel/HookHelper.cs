@@ -67,7 +67,7 @@ namespace WpfHook.ViewModel
 
         //鼠标
         private const int WmMousemove = 0x200;
-        private const int WmLButtonDown = 0x201;
+        public const int WmLButtonDown = 0x201;
         private const int WmRButtonDown = 0x204;
         private const int WmMButtonDown = 0x207;
         private const int WmLButtonUp = 0x202;
